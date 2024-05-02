@@ -9,4 +9,7 @@ public class WatchlistEntity {
     public String apiId;
 
     public WatchlistEntity() {}
+    public WatchlistEntity(String apiId) {
+        this.apiId = apiId;
+    }
 }

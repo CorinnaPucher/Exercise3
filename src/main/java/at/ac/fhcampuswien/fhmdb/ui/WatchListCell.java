@@ -14,11 +14,11 @@ import javafx.scene.paint.Color;
 
 import java.sql.SQLException;
 
-public class MovieCell extends ListCell<Movie> {
+public class WatchListCell extends ListCell<Movie> {
     private final Label title = new Label();
     private final Label detail = new Label();
     private final Label genres = new Label();
-    private final Button watchlist = new Button("Watchlist");
+    private final Button watchlist = new Button("Remove");
     private final VBox layout = new VBox(title, detail, genres, watchlist);
 
     @Override
@@ -59,7 +59,9 @@ public class MovieCell extends ListCell<Movie> {
             watchlist.setOnAction(actionEvent -> {
                 WatchlistRepository watchlistRepository = new WatchlistRepository();
                 try {
-                    watchlistRepository.addToWatchlist(new WatchlistEntity(movie.id));
+                    watchlistRepository.removeFromWatchlist(movie.id);
+                    setText(null);
+                    setGraphic(null);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }

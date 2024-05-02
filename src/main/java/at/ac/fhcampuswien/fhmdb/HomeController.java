@@ -94,7 +94,6 @@ public class HomeController implements Initializable {
                 throw new RuntimeException(e);
             }
         });
-        DatabaseManager.getDatabase();
 
     }
 
@@ -116,14 +115,32 @@ public class HomeController implements Initializable {
         if (!ratingSearchField.getText().equals("")) {
             ratingFrom = Double.parseDouble(ratingSearchField.getText());
         }
-        List<Movie> filteredMovies = JSONAction.parseJSON(MovieAPI.sendRequest(query, genre, releaseYear, ratingFrom));
+        List<Movie> filteredMovies = null;
+        try {
+            filteredMovies = JSONAction.parseJSON(MovieAPI.sendRequest(query, genre, releaseYear, ratingFrom));
+        } catch (IOException e) {
+            // TODO: FinishMethod
+            observableMovies.clear();
+            for (Movie movie : allMovies) {
+                if(movie.releaseYear != releaseYear && movie.releaseYear != -1) continue;
+                if(!movie.title.contains(query) && !query.equals("")) continue;
+                if(!movie.getGenres().contains(genre) && !genre.equals("")) continue;
+                observableMovies.add(movie);
+            }
+
+        }
         observableMovies.addAll(filteredMovies);
     }
 
     public void filter(String query, String genre, int releaseYear, double ratingFrom) {
         observableMovies.clear();
 
-        List<Movie> filteredMovies = JSONAction.parseJSON(MovieAPI.sendRequest(query, genre, releaseYear, ratingFrom));
+        List<Movie> filteredMovies = null;
+        try {
+            filteredMovies = JSONAction.parseJSON(MovieAPI.sendRequest(query, genre, releaseYear, ratingFrom));
+        } catch (IOException e) {
+
+        }
         observableMovies.addAll(filteredMovies);
     }
 

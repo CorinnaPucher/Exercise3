@@ -13,7 +13,7 @@ public class MovieAPI {
      *
      * @return JSON String
      */
-    public static String sendRequest() {
+    public static String sendRequest() throws IOException{
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -25,8 +25,6 @@ public class MovieAPI {
 
         try (Response response = call.execute()) {
             return response.body().string();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
     }
@@ -40,7 +38,7 @@ public class MovieAPI {
      * @param ratingFrom  movie rating (-1 = no input)
      * @return JSON String
      */
-    public static String sendRequest(String query, String genre, int releaseYear, double ratingFrom) {
+    public static String sendRequest(String query, String genre, int releaseYear, double ratingFrom) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("https://prog2.fh-campuswien.ac.at/movies?");
         if (!query.equals("")) {
@@ -66,8 +64,6 @@ public class MovieAPI {
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             return response.body().string();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
     }

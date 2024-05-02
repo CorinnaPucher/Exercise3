@@ -3,7 +3,12 @@ package at.ac.fhcampuswien.fhmdb.models;
 import at.ac.fhcampuswien.fhmdb.JSONAction;
 import at.ac.fhcampuswien.fhmdb.JSONMovie;
 import at.ac.fhcampuswien.fhmdb.MovieAPI;
+import at.ac.fhcampuswien.fhmdb.database.DatabaseManager;
+import at.ac.fhcampuswien.fhmdb.database.MovieEntity;
+import at.ac.fhcampuswien.fhmdb.database.MovieRepository;
 
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -48,6 +53,16 @@ public class Movie implements Comparable<Movie> {
         this.mainCast = mainCast;
         this.rating = rating;
     }
+    public Movie(MovieEntity entityMovie) {
+        this.id = entityMovie.apiId;
+        this.title = entityMovie.title;
+        this.genres = entityMovie.genres.split(",");
+        this.releaseYear = entityMovie.releaseYear;
+        this.description = entityMovie.description;
+        this.imgUrl = entityMovie.imgUrl;
+        this.lengthInMinutes = entityMovie.lengthInMinutes;
+        this.rating = entityMovie.rating;
+    }
     public Movie(String title) {
         this.title = title;
     }
@@ -79,7 +94,21 @@ public class Movie implements Comparable<Movie> {
     }
 
     public static List<Movie> initializeMovies() {
-        List<Movie> movies = JSONAction.parseJSON(MovieAPI.sendRequest());
+        List<Movie> movies = null;
+        MovieRepository movieRepository = new MovieRepository();
+        try {
+            movies = JSONAction.parseJSON(MovieAPI.sendRequest());
+            movieRepository.addAllMovies(movies);
+        } catch (IOException e) {
+            try {
+                movies = MovieEntity.toMovies(movieRepository.getAllMovies());
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         return movies;
     }
 

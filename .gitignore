@@ -33,4 +33,4 @@ build/
 
 ### Mac OS ###
 .DS_Store
-db/moviedb.mv.db
+src/main/java/at/ac/fhcampuswien/fhmdb/database/moviedb.mv.db

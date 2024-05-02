@@ -1,8 +1,13 @@
 package at.ac.fhcampuswien.fhmdb;
 
+import at.ac.fhcampuswien.fhmdb.database.MovieEntity;
+import at.ac.fhcampuswien.fhmdb.database.MovieRepository;
+import at.ac.fhcampuswien.fhmdb.database.WatchlistEntity;
+import at.ac.fhcampuswien.fhmdb.database.WatchlistRepository;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import at.ac.fhcampuswien.fhmdb.ui.MovieCell;
+import at.ac.fhcampuswien.fhmdb.ui.WatchListCell;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
@@ -19,6 +24,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,8 +33,9 @@ import java.util.stream.Stream;
 public class WatchlistController implements Initializable {
     @FXML
     public JFXListView movieListView;
+    private WatchlistRepository watchlistRepository = new WatchlistRepository();
 
-    public List<Movie> allMovies = Movie.initializeMovies();
+    public List<Movie> allMovies = new ArrayList<>();
 
     private final ObservableList<Movie> observableMovies = FXCollections.observableArrayList();   // automatically updates corresponding UI elements when underlying data changes
     @FXML
@@ -36,11 +43,23 @@ public class WatchlistController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        observableMovies.addAll(allMovies);         // add dummy data to observable list
+        try {
+            List<WatchlistEntity> watchlistEntities = watchlistRepository.getWatchlist();
+            MovieRepository movieRepository = new MovieRepository();
+
+            for (WatchlistEntity entity: watchlistEntities) {
+                MovieEntity foundMovie = movieRepository.getMovie(entity.apiId);
+                if(foundMovie != null){
+                    observableMovies.add(new Movie(foundMovie));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
         // initialize UI stuff
         movieListView.setItems(observableMovies);   // set data of observable list to list view
-        movieListView.setCellFactory(movieListView -> new MovieCell()); // use custom cell factory to display data
+        movieListView.setCellFactory(movieListView -> new WatchListCell()); // use custom cell factory to display data
         homeButton.setOnAction(actionEvent -> {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(FhmdbApplication.class.getResource("home-view.fxml"));
