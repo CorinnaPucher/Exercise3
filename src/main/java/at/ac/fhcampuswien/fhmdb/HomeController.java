@@ -8,6 +8,8 @@ import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -16,7 +18,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.io.IOException;
 import java.net.URL;
@@ -44,7 +48,7 @@ public class HomeController implements Initializable {
     @FXML
     public JFXButton sortBtn;
 
-    public List<Movie> allMovies = Movie.initializeMovies();
+    public List<Movie> allMovies;
 
     private final ObservableList<Movie> observableMovies = FXCollections.observableArrayList();   // automatically updates corresponding UI elements when underlying data changes
     @FXML
@@ -52,7 +56,8 @@ public class HomeController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        observableMovies.addAll(allMovies);         // add dummy data to observable list
+        allMovies = Movie.initializeMovies();
+        observableMovies.addAll(allMovies);
 
         // initialize UI stuff
         movieListView.setItems(observableMovies);   // set data of observable list to list view
@@ -64,7 +69,12 @@ public class HomeController implements Initializable {
 
         // add event handlers to buttons and call the regarding methods
         // either set event handlers in the fxml file (onAction) or add them here
+        initializeButtons();
+        addNumericValidation(ratingSearchField);
+        addNumericValidation(yearSearchField);
+    }
 
+    private void initializeButtons() {
         // Sort button:
         sortBtn.setOnAction(actionEvent -> {
             if (sortBtn.getText().equals("Sort (asc)")) {
@@ -78,9 +88,12 @@ public class HomeController implements Initializable {
             }
         });
 
-        // Filter button:
         searchBtn.setOnAction(actionEvent -> {
-            filter();
+            String query = searchField.getText().toLowerCase();
+            String genre = genreComboBox.getValue() != null ? genreComboBox.getValue().toString() : "";
+            int releaseYear = yearSearchField.getText().isEmpty() ? -1 : Integer.parseInt(yearSearchField.getText());
+            double ratingFrom = ratingSearchField.getText().isEmpty() ? -1 : Double.parseDouble(ratingSearchField.getText());
+            filter(query, genre, releaseYear, ratingFrom);
         });
 
         // Watchlist button:
@@ -94,58 +107,42 @@ public class HomeController implements Initializable {
                 throw new RuntimeException(e);
             }
         });
-
     }
+
+    private void addNumericValidation(TextField textField) {
+        textField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("\\d{0,2}")) {
+                textField.setText(newValue.replaceAll("\\D", ""));
+            }
+        });
+    }
+
 
     /**
      * Parses all Fields and filters the Movielist accordingly
      */
-    public void filter() {
-        observableMovies.clear();
-        String query = searchField.getText();
-        String genre = "";
-        int releaseYear = -1;
-        double ratingFrom = -1;
-        if (genreComboBox.getValue() != null) {
-            genre = genreComboBox.getValue().toString();
-        }
-        if (!yearSearchField.getText().equals("")) {
-            releaseYear = Integer.parseInt(yearSearchField.getText());
-        }
-        if (!ratingSearchField.getText().equals("")) {
-            ratingFrom = Double.parseDouble(ratingSearchField.getText());
-        }
-        List<Movie> filteredMovies = null;
-        try {
-            filteredMovies = JSONAction.parseJSON(MovieAPI.sendRequest(query, genre, releaseYear, ratingFrom));
-        } catch (IOException e) {
-            // TODO: FinishMethod
-            observableMovies.clear();
-            for (Movie movie : allMovies) {
-                if(movie.releaseYear != releaseYear && movie.releaseYear != -1) continue;
-                if(!movie.title.contains(query) && !query.equals("")) continue;
-                if(!movie.getGenres().contains(genre) && !genre.equals("")) continue;
-                observableMovies.add(movie);
-            }
-
-        }
-        observableMovies.addAll(filteredMovies);
-    }
 
     public void filter(String query, String genre, int releaseYear, double ratingFrom) {
         observableMovies.clear();
 
-        List<Movie> filteredMovies = null;
+        List<Movie> filteredMovies = new ArrayList<>();
         try {
             filteredMovies = JSONAction.parseJSON(MovieAPI.sendRequest(query, genre, releaseYear, ratingFrom));
         } catch (IOException e) {
-
+            for (Movie movie : allMovies) {
+                if (movie.releaseYear != releaseYear && releaseYear != -1) continue;
+                if (!movie.title.toLowerCase().contains(query)) continue;
+                if (!movie.getGenres().contains(genre)) continue;
+                if (movie.rating < ratingFrom && ratingFrom != -1.0) continue;
+                filteredMovies.add(movie);
+            }
         }
         observableMovies.addAll(filteredMovies);
     }
 
     /**
      * Return actor who most often was in the main cast
+     *
      * @param movies all movies
      * @return actor with highest count
      */
@@ -157,12 +154,13 @@ public class HomeController implements Initializable {
                 .stream()
                 .max(Map.Entry.comparingByValue());
 
-        if(highestEntry.isPresent()) return highestEntry.get().getKey();
+        if (highestEntry.isPresent()) return highestEntry.get().getKey();
         else return "";
     }
 
     /**
      * Return title length of the movie with the longest title
+     *
      * @param movies all movies
      * @return title length
      */
@@ -177,7 +175,8 @@ public class HomeController implements Initializable {
 
     /**
      * Return count of movies for specified director
-     * @param movies all movies
+     *
+     * @param movies   all movies
      * @param director specific director
      * @return count of movies
      */
@@ -191,9 +190,10 @@ public class HomeController implements Initializable {
 
     /**
      * Return movie list with release year between two given years
-     * @param movies all movies
+     *
+     * @param movies    all movies
      * @param startYear search value greater or equal
-     * @param endYear search value less or equal
+     * @param endYear   search value less or equal
      * @return filtered movie list
      */
     public List<Movie> getMoviesBetweenYears(List<Movie> movies, int startYear, int endYear) {

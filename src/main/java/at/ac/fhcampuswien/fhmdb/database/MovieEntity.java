@@ -9,7 +9,7 @@ import java.util.List;
 public class MovieEntity {
     @DatabaseField(generatedId = true)
     public long id;
-    @DatabaseField
+    @DatabaseField(unique = true)
     public String apiId;
     @DatabaseField
     public String title;

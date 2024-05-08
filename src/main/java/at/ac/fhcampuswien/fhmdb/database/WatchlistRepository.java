@@ -15,7 +15,11 @@ public class WatchlistRepository {
     }
     public int addToWatchlist(WatchlistEntity movie) throws SQLException {
         // TODO: Fix Duplicate
-        dao.createIfNotExists(movie);
+        try{
+            dao.createIfNotExists(movie);
+        }catch (java.sql.SQLException e){
+            System.out.println("Already Exists");
+        }
         return 0;
     }
     public int removeFromWatchlist (String apiID) throws SQLException {
@@ -25,6 +29,10 @@ public class WatchlistRepository {
         return 0;
     }
     public List<WatchlistEntity> getWatchlist() throws SQLException {
+        List<WatchlistEntity> s= dao.queryForAll();
+        for (WatchlistEntity e : s){
+            System.out.println(e.apiId);
+        }
         return dao.queryForAll();
     }
 }

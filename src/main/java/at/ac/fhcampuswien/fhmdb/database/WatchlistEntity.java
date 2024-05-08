@@ -5,7 +5,8 @@ import com.j256.ormlite.field.DatabaseField;
 public class WatchlistEntity {
     @DatabaseField(generatedId = true)
     public long id;
-    @DatabaseField
+
+    @DatabaseField(unique = true)
     public String apiId;
 
     public WatchlistEntity() {}

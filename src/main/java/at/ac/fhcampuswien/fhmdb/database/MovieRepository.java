@@ -16,7 +16,9 @@ public class MovieRepository {
     public int addAllMovies(List<Movie> movies) throws SQLException {
         List<MovieEntity> entities = MovieEntity.fromMovies(movies);
         for (MovieEntity movieentity : entities) {
-            dao.createIfNotExists(movieentity);
+            try{
+                dao.createIfNotExists(movieentity);
+            }catch (SQLException ignored){ }
         }
         return entities.size();
     }
