@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.fhmdb.database;
 
+import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.DeleteBuilder;
@@ -10,28 +11,32 @@ import java.util.List;
 public class WatchlistRepository {
     Dao<WatchlistEntity, Long> dao;
 
-    public WatchlistRepository() {
+    public WatchlistRepository() throws DatabaseException {
         this.dao = DatabaseManager.getDatabase().getWatchlistDao();
     }
-    public int addToWatchlist(WatchlistEntity movie) throws SQLException {
+    public int addToWatchlist(WatchlistEntity movie) throws DatabaseException {
         try{
             dao.createIfNotExists(movie);
         }catch (java.sql.SQLException e){
-            System.out.println("Already Exists");
+            throw new DatabaseException("Movie already exists");
         }
         return 0;
     }
-    public int removeFromWatchlist (String apiID) throws SQLException {
+    public int removeFromWatchlist (String apiID) throws DatabaseException {
         DeleteBuilder<WatchlistEntity, Long> deleteBuilder = dao.deleteBuilder();
-        deleteBuilder.where().eq("apiId", apiID);
-        deleteBuilder.delete();
+        try {
+            deleteBuilder.where().eq("apiId", apiID);
+            deleteBuilder.delete();
+        } catch (SQLException e) {
+            throw new DatabaseException("Couldn't remove from watchlist");
+        }
         return 0;
     }
-    public List<WatchlistEntity> getWatchlist() throws SQLException {
-        List<WatchlistEntity> s= dao.queryForAll();
-        for (WatchlistEntity e : s){
-            System.out.println(e.apiId);
+    public List<WatchlistEntity> getWatchlist() throws DatabaseException {
+        try {
+            return dao.queryForAll();
+        } catch (SQLException e) {
+            throw new DatabaseException("Couldn't get watchlist");
         }
-        return dao.queryForAll();
     }
 }

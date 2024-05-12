@@ -1,8 +1,11 @@
 package at.ac.fhcampuswien.fhmdb;
 
 import at.ac.fhcampuswien.fhmdb.database.DatabaseManager;
+import at.ac.fhcampuswien.fhmdb.database.MovieRepository;
 import at.ac.fhcampuswien.fhmdb.database.WatchlistEntity;
 import at.ac.fhcampuswien.fhmdb.database.WatchlistRepository;
+import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
+import at.ac.fhcampuswien.fhmdb.exceptions.MovieApiException;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import at.ac.fhcampuswien.fhmdb.ui.MovieCell;
@@ -18,9 +21,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
 
@@ -59,7 +60,21 @@ public class HomeController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        allMovies = Movie.initializeMovies();
+        try {
+            allMovies = Movie.initializeMovies();
+            MovieRepository movieRepository = new MovieRepository();
+            movieRepository.addAllMovies(allMovies);
+        } catch (DatabaseException e) {
+            messageForUser(Alert.AlertType.WARNING, e.getMessage());
+        }
+        catch (MovieApiException e) {
+            try {
+                allMovies = Movie.initializeMovieDatabase();
+                messageForUser(Alert.AlertType.INFORMATION, "Fetching from database");
+            } catch (DatabaseException ex) {
+                messageForUser(Alert.AlertType.WARNING, e.getMessage());
+            }
+        }
         observableMovies.addAll(allMovies);
 
         // initialize UI stuff
@@ -76,14 +91,19 @@ public class HomeController implements Initializable {
         addNumericValidation(ratingSearchField);
         addNumericValidation(yearSearchField);
     }
-
+    private void messageForUser(Alert.AlertType alertType, String message) {
+        Alert alert = new Alert(alertType, message);
+        alert.showAndWait()
+                .filter(response -> response == ButtonType.OK)
+                .ifPresent(response -> System.out.println());
+    }
     private void initializeCellFactory() {
         ClickEventHandler <Movie> addToWatchlistClicked = (movie) -> {
-            WatchlistRepository watchlistRepository = new WatchlistRepository();
             try {
+                WatchlistRepository watchlistRepository = new WatchlistRepository();
                 watchlistRepository.addToWatchlist(new WatchlistEntity(movie.id));
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            } catch (DatabaseException e) {
+                messageForUser(Alert.AlertType.INFORMATION, "This movie is already in your watchlist!");
             }
         };
         movieListView.setCellFactory(movieListView -> new MovieCell(addToWatchlistClicked)); // use custom cell factory to display data
@@ -118,7 +138,7 @@ public class HomeController implements Initializable {
                 Stage root = (Stage) watchButton.getScene().getWindow();
                 root.setScene(scene);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                messageForUser(Alert.AlertType.ERROR, "Could not switch to watchlist scene");
             }
         });
     }
@@ -142,7 +162,7 @@ public class HomeController implements Initializable {
         List<Movie> filteredMovies = new ArrayList<>();
         try {
             filteredMovies = JSONAction.parseJSON(MovieAPI.sendRequest(query, genre, releaseYear, ratingFrom));
-        } catch (IOException e) {
+        } catch (MovieApiException e) {
             for (Movie movie : allMovies) {
                 if (movie.releaseYear != releaseYear && releaseYear != -1) continue;
                 if (!movie.title.toLowerCase().contains(query)) continue;
@@ -150,6 +170,7 @@ public class HomeController implements Initializable {
                 if (movie.rating < ratingFrom && ratingFrom != -1.0) continue;
                 filteredMovies.add(movie);
             }
+            messageForUser(Alert.AlertType.INFORMATION, "Fetching from database");
         }
         observableMovies.addAll(filteredMovies);
     }

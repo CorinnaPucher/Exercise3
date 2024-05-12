@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.fhmdb.database;
 
+import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
@@ -17,18 +18,18 @@ public class DatabaseManager {
     Dao<WatchlistEntity, Long> watchlistDao;
     private static DatabaseManager instance;
 
-    private DatabaseManager() {
+    private DatabaseManager() throws DatabaseException {
         try {
             createConnection();
             movieDao = DaoManager.createDao(connectionSource, MovieEntity.class);
             watchlistDao = DaoManager.createDao(connectionSource, WatchlistEntity.class);
             createTables();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            throw new DatabaseException();
         }
     }
 
-    public static DatabaseManager getDatabase() {
+    public static DatabaseManager getDatabase() throws DatabaseException {
         if(instance == null) {
             instance = new DatabaseManager();
         }
@@ -43,12 +44,21 @@ public class DatabaseManager {
         return this.watchlistDao;
     }
 
-    private static void createTables() throws SQLException {
-        TableUtils.createTableIfNotExists(connectionSource, MovieEntity.class);
-        TableUtils.createTableIfNotExists(connectionSource, WatchlistEntity.class);
+    private static void createTables() throws DatabaseException {
+        try {
+            TableUtils.createTableIfNotExists(connectionSource, MovieEntity.class);
+            TableUtils.createTableIfNotExists(connectionSource, WatchlistEntity.class);
+        } catch (SQLException e) {
+            throw new DatabaseException("Tables cannot be created :(");
+        }
+
     }
 
-    private static void createConnection() throws SQLException {
-        connectionSource = new JdbcConnectionSource(DB_URL, USER, PASSWORD);
+    private static void createConnection() throws DatabaseException {
+        try {
+            connectionSource = new JdbcConnectionSource(DB_URL, USER, PASSWORD);
+        } catch (SQLException e) {
+            throw new DatabaseException("Connection didn't work");
+        }
     }
 }

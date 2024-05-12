@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.fhmdb;
 
+import at.ac.fhcampuswien.fhmdb.exceptions.MovieApiException;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import okhttp3.*;
 
@@ -13,7 +14,7 @@ public class MovieAPI {
      *
      * @return JSON String
      */
-    public static String sendRequest() throws IOException{
+    public static String sendRequest() throws MovieApiException {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
@@ -25,6 +26,8 @@ public class MovieAPI {
 
         try (Response response = call.execute()) {
             return response.body().string();
+        } catch (IOException io) {
+            throw new MovieApiException();
         }
 
     }
@@ -38,7 +41,7 @@ public class MovieAPI {
      * @param ratingFrom  movie rating (-1 = no input)
      * @return JSON String
      */
-    public static String sendRequest(String query, String genre, int releaseYear, double ratingFrom) throws IOException {
+    public static String sendRequest(String query, String genre, int releaseYear, double ratingFrom) throws MovieApiException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("https://prog2.fh-campuswien.ac.at/movies?");
         if (!query.equals("")) {
@@ -64,6 +67,8 @@ public class MovieAPI {
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             return response.body().string();
+        } catch (IOException io) {
+            throw new MovieApiException();
         }
 
     }

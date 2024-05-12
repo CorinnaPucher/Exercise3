@@ -6,6 +6,8 @@ import at.ac.fhcampuswien.fhmdb.MovieAPI;
 import at.ac.fhcampuswien.fhmdb.database.DatabaseManager;
 import at.ac.fhcampuswien.fhmdb.database.MovieEntity;
 import at.ac.fhcampuswien.fhmdb.database.MovieRepository;
+import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
+import at.ac.fhcampuswien.fhmdb.exceptions.MovieApiException;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -93,22 +95,16 @@ public class Movie implements Comparable<Movie> {
         return bool;
     }
 
-    public static List<Movie> initializeMovies() {
+    public static List<Movie> initializeMovies() throws DatabaseException, MovieApiException {
+        List<Movie> movies = null;
+        movies = JSONAction.parseJSON(MovieAPI.sendRequest());
+        return movies;
+    }
+
+    public static List<Movie> initializeMovieDatabase() throws DatabaseException {
         List<Movie> movies = null;
         MovieRepository movieRepository = new MovieRepository();
-        try {
-            movies = JSONAction.parseJSON(MovieAPI.sendRequest());
-            movieRepository.addAllMovies(movies);
-        } catch (IOException e) {
-            try {
-                movies = MovieEntity.toMovies(movieRepository.getAllMovies());
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
+        movies = MovieEntity.toMovies(movieRepository.getAllMovies());
         return movies;
     }
 
