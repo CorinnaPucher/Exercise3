@@ -1,6 +1,8 @@
 package at.ac.fhcampuswien.fhmdb;
 
 import at.ac.fhcampuswien.fhmdb.database.DatabaseManager;
+import at.ac.fhcampuswien.fhmdb.database.WatchlistEntity;
+import at.ac.fhcampuswien.fhmdb.database.WatchlistRepository;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import at.ac.fhcampuswien.fhmdb.ui.MovieCell;
@@ -24,6 +26,7 @@ import javafx.util.converter.IntegerStringConverter;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -61,7 +64,7 @@ public class HomeController implements Initializable {
 
         // initialize UI stuff
         movieListView.setItems(observableMovies);   // set data of observable list to list view
-        movieListView.setCellFactory(movieListView -> new MovieCell()); // use custom cell factory to display data
+        initializeCellFactory();
 
         // add genre filter items
         genreComboBox.getItems().addAll(Genre.values());
@@ -74,6 +77,17 @@ public class HomeController implements Initializable {
         addNumericValidation(yearSearchField);
     }
 
+    private void initializeCellFactory() {
+        ClickEventHandler <Movie> addToWatchlistClicked = (movie) -> {
+            WatchlistRepository watchlistRepository = new WatchlistRepository();
+            try {
+                watchlistRepository.addToWatchlist(new WatchlistEntity(movie.id));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        movieListView.setCellFactory(movieListView -> new MovieCell(addToWatchlistClicked)); // use custom cell factory to display data
+    }
     private void initializeButtons() {
         // Sort button:
         sortBtn.setOnAction(actionEvent -> {
@@ -111,7 +125,7 @@ public class HomeController implements Initializable {
 
     private void addNumericValidation(TextField textField) {
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue.matches("\\d{0,2}")) {
+            if (!newValue.matches("\\d")) {
                 textField.setText(newValue.replaceAll("\\D", ""));
             }
         });

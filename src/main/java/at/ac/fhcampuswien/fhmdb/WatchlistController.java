@@ -59,7 +59,7 @@ public class WatchlistController implements Initializable {
 
         // initialize UI stuff
         movieListView.setItems(observableMovies);   // set data of observable list to list view
-        movieListView.setCellFactory(movieListView -> new WatchListCell()); // use custom cell factory to display data
+        initializeCellFactory();
         homeButton.setOnAction(actionEvent -> {
             try {
                 FXMLLoader fxmlLoader = new FXMLLoader(FhmdbApplication.class.getResource("home-view.fxml"));
@@ -70,5 +70,18 @@ public class WatchlistController implements Initializable {
                 throw new RuntimeException(e);
             }
         });
+    }
+    private void initializeCellFactory() {
+        ClickEventHandler <WatchListCell> removeFromWatchlistClicked = (watchListCell) -> {
+            WatchlistRepository watchlistRepository = new WatchlistRepository();
+            try {
+                watchlistRepository.removeFromWatchlist(watchListCell.getItem().id);
+                watchListCell.setText(null);
+                watchListCell.setGraphic(null);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        movieListView.setCellFactory(movieListView -> new WatchListCell(removeFromWatchlistClicked)); // use custom cell factory to display data
     }
 }

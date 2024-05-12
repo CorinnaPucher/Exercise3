@@ -14,7 +14,6 @@ public class WatchlistRepository {
         this.dao = DatabaseManager.getDatabase().getWatchlistDao();
     }
     public int addToWatchlist(WatchlistEntity movie) throws SQLException {
-        // TODO: Fix Duplicate
         try{
             dao.createIfNotExists(movie);
         }catch (java.sql.SQLException e){

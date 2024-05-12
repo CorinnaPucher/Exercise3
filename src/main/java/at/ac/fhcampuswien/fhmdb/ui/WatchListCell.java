@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.fhmdb.ui;
 
+import at.ac.fhcampuswien.fhmdb.ClickEventHandler;
 import at.ac.fhcampuswien.fhmdb.database.WatchlistEntity;
 import at.ac.fhcampuswien.fhmdb.database.WatchlistRepository;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
@@ -20,7 +21,12 @@ public class WatchListCell extends ListCell<Movie> {
     private final Label genres = new Label();
     private final Button watchlist = new Button("Remove");
     private final VBox layout = new VBox(title, detail, genres, watchlist);
-
+    public WatchListCell (ClickEventHandler removeFromWatchlistClicked) {
+        super();
+        watchlist.setOnMouseClicked(mouseEvent -> {
+            removeFromWatchlistClicked.onClick(this);
+        });
+    }
     @Override
     protected void updateItem(Movie movie, boolean empty) {
         super.updateItem(movie, empty);
@@ -54,18 +60,6 @@ public class WatchListCell extends ListCell<Movie> {
             layout.spacingProperty().set(10);
             layout.alignmentProperty().set(javafx.geometry.Pos.CENTER_LEFT);
             setGraphic(layout);
-
-            // Add to watchlist
-            watchlist.setOnAction(actionEvent -> {
-                WatchlistRepository watchlistRepository = new WatchlistRepository();
-                try {
-                    watchlistRepository.removeFromWatchlist(movie.id);
-                    setText(null);
-                    setGraphic(null);
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            });
         }
 
     }
