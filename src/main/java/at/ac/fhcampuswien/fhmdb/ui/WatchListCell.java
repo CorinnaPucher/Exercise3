@@ -21,6 +21,8 @@ public class WatchListCell extends ListCell<Movie> {
     private final Label genres = new Label();
     private final Button watchlist = new Button("Remove");
     private final VBox layout = new VBox(title, detail, genres, watchlist);
+
+    // Constructor to add the Controller provided ClickEventHandler to Button
     public WatchListCell (ClickEventHandler removeFromWatchlistClicked) {
         super();
         watchlist.setOnMouseClicked(mouseEvent -> {

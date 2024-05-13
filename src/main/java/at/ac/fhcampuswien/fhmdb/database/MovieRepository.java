@@ -14,6 +14,11 @@ public class MovieRepository {
         this.dao = DatabaseManager.getDatabase().getMovieDao();
     }
 
+    /**
+     * Adds all Movies in the Parameters to the Database
+     * @param movies The Movies
+     * @return How many
+     */
     public int addAllMovies(List<Movie> movies) {
         List<MovieEntity> entities = MovieEntity.fromMovies(movies);
         for (MovieEntity movieentity : entities) {
@@ -23,7 +28,7 @@ public class MovieRepository {
         }
         return entities.size();
     }
-
+    // Removes all Movies
     public int removeAll () throws DatabaseException {
         try {
             dao.delete(dao.queryForAll());
@@ -32,7 +37,7 @@ public class MovieRepository {
         }
         return 0;
     }
-
+    // Gets all Movies
     public List<MovieEntity> getAllMovies() throws DatabaseException {
         try {
             return dao.queryForAll();
@@ -41,15 +46,21 @@ public class MovieRepository {
         }
     }
 
+    /**
+     * Gets a Movie to an apiId
+     * @param apiId The apiId
+     * @return The Movie with the apiId
+     * @throws DatabaseException If Query for all did not work
+     */
     public MovieEntity getMovie(String apiId) throws DatabaseException {
         List<MovieEntity> movieEntityList = null;
         try {
             movieEntityList = dao.queryForAll();
+            for (MovieEntity movieEntity : movieEntityList) {
+                if(movieEntity.apiId.equals(apiId)) return movieEntity;
+            }
         } catch (SQLException e) {
-            throw new DatabaseException("Couldn't find associated movie");
-        }
-        for (MovieEntity movieEntity : movieEntityList) {
-            if(movieEntity.apiId.equals(apiId)) return movieEntity;
+            throw new DatabaseException("Query for all did not work");
         }
         return null;
     }

@@ -95,7 +95,7 @@ public class Movie implements Comparable<Movie> {
         return bool;
     }
 
-    public static List<Movie> initializeMovies() throws DatabaseException, MovieApiException {
+    public static List<Movie> initializeMovies() throws MovieApiException {
         List<Movie> movies = null;
         movies = JSONAction.parseJSON(MovieAPI.sendRequest());
         return movies;

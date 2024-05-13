@@ -18,6 +18,10 @@ public class DatabaseManager {
     Dao<WatchlistEntity, Long> watchlistDao;
     private static DatabaseManager instance;
 
+    /**
+     * Constructor that creates the Database + Connection and DAOs (Only used in getDatabse())
+     * @throws DatabaseException Connection Failed
+     */
     private DatabaseManager() throws DatabaseException {
         try {
             createConnection();
@@ -29,6 +33,11 @@ public class DatabaseManager {
         }
     }
 
+    /**
+     * Returns the current DatabaseManager, and creates it if it does'nt exist
+     * @return The Database
+     * @throws DatabaseException Connection Failed
+     */
     public static DatabaseManager getDatabase() throws DatabaseException {
         if(instance == null) {
             instance = new DatabaseManager();
@@ -44,6 +53,10 @@ public class DatabaseManager {
         return this.watchlistDao;
     }
 
+    /**
+     * Creates Tables for every Entity (if it does not exist)
+     * @throws DatabaseException If Tables couldn't be created
+     */
     private static void createTables() throws DatabaseException {
         try {
             TableUtils.createTableIfNotExists(connectionSource, MovieEntity.class);
@@ -54,6 +67,10 @@ public class DatabaseManager {
 
     }
 
+    /**
+     * Creates a Connection to the database
+     * @throws DatabaseException If the connection didn't work
+     */
     private static void createConnection() throws DatabaseException {
         try {
             connectionSource = new JdbcConnectionSource(DB_URL, USER, PASSWORD);

@@ -14,6 +14,11 @@ public class WatchlistRepository {
     public WatchlistRepository() throws DatabaseException {
         this.dao = DatabaseManager.getDatabase().getWatchlistDao();
     }
+
+    /**
+     * Adds WatchListEntity to Database
+     * @param movie WatchListEntity
+     */
     public int addToWatchlist(WatchlistEntity movie) throws DatabaseException {
         try{
             dao.createIfNotExists(movie);
@@ -22,6 +27,10 @@ public class WatchlistRepository {
         }
         return 0;
     }
+    /**
+     * Removes WatchListEntity to Database
+     * @param apiID The apiId of the WatchListEntity
+     */
     public int removeFromWatchlist (String apiID) throws DatabaseException {
         DeleteBuilder<WatchlistEntity, Long> deleteBuilder = dao.deleteBuilder();
         try {
@@ -32,6 +41,7 @@ public class WatchlistRepository {
         }
         return 0;
     }
+    // Gets all WatchListEntities
     public List<WatchlistEntity> getWatchlist() throws DatabaseException {
         try {
             return dao.queryForAll();

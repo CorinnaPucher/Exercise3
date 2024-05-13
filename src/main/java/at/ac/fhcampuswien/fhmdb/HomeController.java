@@ -68,6 +68,7 @@ public class HomeController implements Initializable {
             messageForUser(Alert.AlertType.WARNING, e.getMessage());
         }
         catch (MovieApiException e) {
+            // In case of MovieApi failure load from Database
             try {
                 allMovies = Movie.initializeMovieDatabase();
                 messageForUser(Alert.AlertType.INFORMATION, "Fetching from database");
@@ -85,18 +86,18 @@ public class HomeController implements Initializable {
         genreComboBox.getItems().addAll(Genre.values());
         genreComboBox.setPromptText("Filter by Genre");
 
-        // add event handlers to buttons and call the regarding methods
-        // either set event handlers in the fxml file (onAction) or add them here
         initializeButtons();
         addNumericValidation(ratingSearchField);
         addNumericValidation(yearSearchField);
     }
+    // Notifies User if something happened per Alert
     private void messageForUser(Alert.AlertType alertType, String message) {
         Alert alert = new Alert(alertType, message);
         alert.showAndWait()
                 .filter(response -> response == ButtonType.OK)
                 .ifPresent(response -> System.out.println());
     }
+    // Intitializes all Cells
     private void initializeCellFactory() {
         ClickEventHandler <Movie> addToWatchlistClicked = (movie) -> {
             try {
@@ -108,6 +109,7 @@ public class HomeController implements Initializable {
         };
         movieListView.setCellFactory(movieListView -> new MovieCell(addToWatchlistClicked)); // use custom cell factory to display data
     }
+    // Initializes the Buttons
     private void initializeButtons() {
         // Sort button:
         sortBtn.setOnAction(actionEvent -> {
@@ -142,7 +144,7 @@ public class HomeController implements Initializable {
             }
         });
     }
-
+    // Adds NumericValidation to certain Fields
     private void addNumericValidation(TextField textField) {
         textField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d")) {

@@ -2,14 +2,15 @@ package at.ac.fhcampuswien.fhmdb.database;
 
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@DatabaseTable
 public class MovieEntity {
     @DatabaseField(generatedId = true)
     public long id;
-    @DatabaseField(unique = true)
+    @DatabaseField(unique = true) // No Duplicates
     public String apiId;
     @DatabaseField
     public String title;
@@ -39,15 +40,20 @@ public class MovieEntity {
         this.rating = movie.rating;
     }
 
+    /**
+     * Converts Genres String Array to single String with ',' delimiter
+     * @param genres Input String array
+     * @return String with ',' delimiter
+     */
     public static String genresToString (String[] genres) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String genre : genres) {
-            stringBuilder.append(genre + ",");
-        }
-        stringBuilder.delete(stringBuilder.length()-1, stringBuilder.length()-1);
-        return stringBuilder.toString();
+        return String.join(",", genres);
     }
 
+    /**
+     * Converts Movies -> MovieEntities
+     * @param movies The Movies
+     * @return The MovieEntities
+     */
     public static List<MovieEntity> fromMovies (List<Movie> movies) {
         List<MovieEntity> movieEntityList = new ArrayList<>();
         for (Movie movie : movies) {
@@ -56,7 +62,11 @@ public class MovieEntity {
         }
         return movieEntityList;
     }
-
+    /**
+     * Converts MovieEntities -> Movies
+     * @param movieEntities The MovieEntities
+     * @return The Movies
+     */
     public static List<Movie> toMovies (List<MovieEntity> movieEntities) {
         List<Movie> movieList = new ArrayList<>();
         for (MovieEntity movieEntity : movieEntities) {

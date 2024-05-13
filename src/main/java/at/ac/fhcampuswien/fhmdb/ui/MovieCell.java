@@ -22,6 +22,7 @@ public class MovieCell extends ListCell<Movie>{
     private final Button watchlist = new Button("Watchlist");
     private final VBox layout = new VBox(title, detail, genres, watchlist);
 
+    // Constructor to add the Controller provided ClickEventHandler to Button
     public MovieCell (ClickEventHandler addToWatchlistClicked) {
         super();
         watchlist.setOnMouseClicked(mouseEvent -> {

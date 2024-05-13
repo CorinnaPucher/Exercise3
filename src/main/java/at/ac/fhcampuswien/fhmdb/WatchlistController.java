@@ -40,6 +40,8 @@ public class WatchlistController implements Initializable {
     private final ObservableList<Movie> observableMovies = FXCollections.observableArrayList();   // automatically updates corresponding UI elements when underlying data changes
     @FXML
     public Button homeButton;
+
+    // Messages the User per Alert
     private void messageForUser(Alert.AlertType alertType, String message) {
         Alert alert = new Alert(alertType, message);
         alert.showAndWait()
@@ -48,6 +50,7 @@ public class WatchlistController implements Initializable {
     }
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Adds all WatchListEntities to observableMovies
         try {
             watchlistRepository = new WatchlistRepository();
             List<WatchlistEntity> watchlistEntities = watchlistRepository.getWatchlist();
@@ -77,6 +80,7 @@ public class WatchlistController implements Initializable {
             }
         });
     }
+    // Intitializes all Cells
     private void initializeCellFactory() {
         ClickEventHandler <WatchListCell> removeFromWatchlistClicked = (watchListCell) -> {
             try {
