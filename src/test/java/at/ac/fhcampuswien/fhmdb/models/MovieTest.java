@@ -1,6 +1,8 @@
 package at.ac.fhcampuswien.fhmdb.models;
 
 import at.ac.fhcampuswien.fhmdb.HomeController;
+import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
+import at.ac.fhcampuswien.fhmdb.exceptions.MovieApiException;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -74,12 +76,21 @@ class MovieTest {
     @Test
     void initializeMovies_returns_not_null() {
         // If an Object is returned
-        assertNotNull(Movie.initializeMovies());
+        try {
+            assertNotNull(Movie.initializeMovies());
+        } catch (DatabaseException | MovieApiException e) {
+            throw new RuntimeException(e);
+        }
     }
     @Test
     void initializeMovies_returns_array_that_is_not_empty() {
         int expected = 0;
-        int actual = Movie.initializeMovies().size();
+        int actual = 0;
+        try {
+            actual = Movie.initializeMovies().size();
+        } catch (DatabaseException | MovieApiException e) {
+            throw new RuntimeException(e);
+        }
         assertNotEquals(expected, actual);
     }
     @Test
