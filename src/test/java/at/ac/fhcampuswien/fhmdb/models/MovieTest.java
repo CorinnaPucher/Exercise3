@@ -78,7 +78,7 @@ class MovieTest {
         // If an Object is returned
         try {
             assertNotNull(Movie.initializeMovies());
-        } catch (DatabaseException | MovieApiException e) {
+        } catch (MovieApiException e) {
             throw new RuntimeException(e);
         }
     }
@@ -88,7 +88,7 @@ class MovieTest {
         int actual = 0;
         try {
             actual = Movie.initializeMovies().size();
-        } catch (DatabaseException | MovieApiException e) {
+        } catch (MovieApiException e) {
             throw new RuntimeException(e);
         }
         assertNotEquals(expected, actual);
